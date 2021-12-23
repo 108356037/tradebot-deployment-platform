@@ -35,11 +35,8 @@ jobs:
     - name: Setup gcloud sdk
       uses: google-github-actions/setup-gcloud@v0
 
-    - name: Use gcloud CLI
-      run: gcloud info
-
     - name: Build Docker image
-      run: docker build -t ${IMAGE_NAME} -f ./microservice/grpc-faas-v2/Dockerfile ./microservice/grpc-faas-v2/
+      run: docker build -t ${IMAGE_NAME} -f ./microservice/${{ env.SERVICE_NAME }}/Dockerfile ./microservice/${{ env.SERVICE_NAME }}/
 
     - name: Configure docker to use gcloud
       run: gcloud auth configure-docker asia-east1-docker.pkg.dev
@@ -70,11 +67,104 @@ jobs:
     - name: Setup gcloud sdk
       uses: google-github-actions/setup-gcloud@v0
 
-    - name: Use gcloud CLI
-      run: gcloud info
+    - name: Build Docker image
+      run: docker build -t ${IMAGE_NAME} -f ./microservice/${{ env.SERVICE_NAME }}/Dockerfile ./microservice/${{ env.SERVICE_NAME }}/
+
+    - name: Configure docker to use gcloud
+      run: gcloud auth configure-docker asia-east1-docker.pkg.dev
+
+    - name: Push to GCR
+      run: docker push ${IMAGE_NAME}
+
+
+  tradebot-store:
+
+    env:
+      SERVICE_NAME: tradebot-store
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set env
+      run: echo "IMAGE_NAME=${{ env.IMAGE_REG }}/${{ env.PROJECT_ID }}/${{ env.IMAGE_REPO }}/${{ env.SERVICE_NAME }}" >> $GITHUB_ENV
+
+    - id: Auth
+      uses: google-github-actions/auth@v0
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Setup gcloud sdk
+      uses: google-github-actions/setup-gcloud@v0
 
     - name: Build Docker image
-      run: docker build -t ${IMAGE_NAME} -f ./microservice/strategy-manager/Dockerfile ./microservice/strategy-manager/
+      run: docker build -t ${IMAGE_NAME} -f ./microservice/${{ env.SERVICE_NAME }}/Dockerfile ./microservice/${{ env.SERVICE_NAME }}/
+
+    - name: Configure docker to use gcloud
+      run: gcloud auth configure-docker asia-east1-docker.pkg.dev
+
+    - name: Push to GCR
+      run: docker push ${IMAGE_NAME}
+
+
+  react-front:
+
+    env:
+      SERVICE_NAME: react-front
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set env
+      run: echo "IMAGE_NAME=${{ env.IMAGE_REG }}/${{ env.PROJECT_ID }}/${{ env.IMAGE_REPO }}/${{ env.SERVICE_NAME }}" >> $GITHUB_ENV
+
+    - id: Auth
+      uses: google-github-actions/auth@v0
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Setup gcloud sdk
+      uses: google-github-actions/setup-gcloud@v0
+
+    - name: Build Docker image
+      run: docker build -t ${IMAGE_NAME} -f ./microservice/${{ env.SERVICE_NAME }}/Dockerfile ./microservice/${{ env.SERVICE_NAME }}/
+
+    - name: Configure docker to use gcloud
+      run: gcloud auth configure-docker asia-east1-docker.pkg.dev
+
+    - name: Push to GCR
+      run: docker push ${IMAGE_NAME}
+
+
+  user-resource:
+
+    env:
+      SERVICE_NAME: user-resource
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set env
+      run: echo "IMAGE_NAME=${{ env.IMAGE_REG }}/${{ env.PROJECT_ID }}/${{ env.IMAGE_REPO }}/${{ env.SERVICE_NAME }}" >> $GITHUB_ENV
+
+    - id: Auth
+      uses: google-github-actions/auth@v0
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Setup gcloud sdk
+      uses: google-github-actions/setup-gcloud@v0
+
+    - name: Build Docker image
+      run: docker build -t ${IMAGE_NAME} -f ./microservice/${{ env.SERVICE_NAME }}/Dockerfile ./microservice/${{ env.SERVICE_NAME }}/
 
     - name: Configure docker to use gcloud
       run: gcloud auth configure-docker asia-east1-docker.pkg.dev
