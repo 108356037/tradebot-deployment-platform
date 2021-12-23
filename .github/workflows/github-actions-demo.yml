@@ -10,6 +10,7 @@ env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   IMAGE_REG: asia-east1-docker.pkg.dev
   IMAGE_REPO: service-reg
+  TAG: latest
   
 jobs:
 
@@ -36,13 +37,13 @@ jobs:
       uses: google-github-actions/setup-gcloud@v0
 
     - name: Build Docker image
-      run: docker build -t ${IMAGE_NAME} -f ./microservice/${{ env.SERVICE_NAME }}/Dockerfile ./microservice/${{ env.SERVICE_NAME }}/
+      run: docker build -t ${IMAGE_NAME}:${{ env.TAG }} -f ./microservice/${{ env.SERVICE_NAME }}/Dockerfile ./microservice/${{ env.SERVICE_NAME }}/
 
     - name: Configure docker to use gcloud
       run: gcloud auth configure-docker asia-east1-docker.pkg.dev
 
     - name: Push to GCR
-      run: docker push ${IMAGE_NAME}:latest
+      run: docker push ${IMAGE_NAME}:${{ env.TAG }}
 
 
   stg-manager:
@@ -68,13 +69,13 @@ jobs:
       uses: google-github-actions/setup-gcloud@v0
 
     - name: Build Docker image
-      run: docker build -t ${IMAGE_NAME} -f ./microservice/${{ env.SERVICE_NAME }}/Dockerfile ./microservice/${{ env.SERVICE_NAME }}/
+      run: docker build -t ${IMAGE_NAME}:${{ env.TAG }} -f ./microservice/${{ env.SERVICE_NAME }}/Dockerfile ./microservice/${{ env.SERVICE_NAME }}/
 
     - name: Configure docker to use gcloud
       run: gcloud auth configure-docker asia-east1-docker.pkg.dev
 
     - name: Push to GCR
-      run: docker push ${IMAGE_NAME}:latest
+      run: docker push ${IMAGE_NAME}:${{ env.TAG }}
 
 
   tradebot-store:
@@ -100,13 +101,13 @@ jobs:
       uses: google-github-actions/setup-gcloud@v0
 
     - name: Build Docker image
-      run: docker build -t ${IMAGE_NAME} -f ./microservice/${{ env.SERVICE_NAME }}/Dockerfile ./microservice/${{ env.SERVICE_NAME }}/
+      run: docker build -t ${IMAGE_NAME}:${{ env.TAG }} -f ./microservice/${{ env.SERVICE_NAME }}/Dockerfile ./microservice/${{ env.SERVICE_NAME }}/
 
     - name: Configure docker to use gcloud
       run: gcloud auth configure-docker asia-east1-docker.pkg.dev
 
     - name: Push to GCR
-      run: docker push ${IMAGE_NAME}:latest
+      run: docker push ${IMAGE_NAME}:${{ env.TAG }}
 
 
   react-front:
@@ -132,13 +133,13 @@ jobs:
       uses: google-github-actions/setup-gcloud@v0
 
     - name: Build Docker image
-      run: docker build -t ${IMAGE_NAME} -f ./microservice/${{ env.SERVICE_NAME }}/Dockerfile ./microservice/${{ env.SERVICE_NAME }}/
+      run: docker build -t ${IMAGE_NAME}:${{ env.TAG }} -f ./microservice/${{ env.SERVICE_NAME }}/Dockerfile ./microservice/${{ env.SERVICE_NAME }}/
 
     - name: Configure docker to use gcloud
       run: gcloud auth configure-docker asia-east1-docker.pkg.dev
 
     - name: Push to GCR
-      run: docker push ${IMAGE_NAME}:latest
+      run: docker push ${IMAGE_NAME}:${{ env.TAG }}
 
 
   user-resource:
@@ -164,10 +165,10 @@ jobs:
       uses: google-github-actions/setup-gcloud@v0
 
     - name: Build Docker image
-      run: docker build -t ${IMAGE_NAME} -f ./microservice/${{ env.SERVICE_NAME }}/Dockerfile ./microservice/${{ env.SERVICE_NAME }}/
+      run: docker build -t ${IMAGE_NAME}:${{ env.TAG }} -f ./microservice/${{ env.SERVICE_NAME }}/Dockerfile ./microservice/${{ env.SERVICE_NAME }}/
 
     - name: Configure docker to use gcloud
       run: gcloud auth configure-docker asia-east1-docker.pkg.dev
 
     - name: Push to GCR
-      run: docker push ${IMAGE_NAME}:latest
+      run: docker push ${IMAGE_NAME}:${{ env.TAG }}
