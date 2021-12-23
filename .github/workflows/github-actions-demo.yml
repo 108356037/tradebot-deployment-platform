@@ -43,7 +43,7 @@ jobs:
       run: docker build -t ${{ env.IMAGE_REG }}/${{ env.IMAGE_REPO }}/grpc-faas-service -f ./microservice/grpc-faas-v2/Dockerfile ./microservice/grpc-faas-v2/
 
     - name: Configure docker to use gcloud
-      run: gcloud auth configure-docker -q
+      run: gcloud auth configure-docker asia-east1-docker.pkg.dev
 
     - name: Push to GCR
       run: docker push ${{ env.IMAGE_REG }}/${{ env.IMAGE_REPO }}/grpc-faas-service
