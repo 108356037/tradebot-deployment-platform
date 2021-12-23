@@ -1,0 +1,41 @@
+# apiVersion: rbac.authorization.k8s.io/v1
+# kind: Role
+# metadata:
+#   namespace: default
+#   name: pod-reader
+# rules:
+# - apiGroups: [""] # "" indicates the core API group
+#   resources: ["pods"]
+#   verbs: ["get", "watch", "list"]
+
+
+#   ---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: k8s-101-role
+subjects:
+- kind: ServiceAccount
+  name: k8s-101-role
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: super-user
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: k8s-101-role
+  namespace: default
+imagePullSecrets:
+- name: "dockerhub-regcred" 
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: super-user
+rules:
+- apiGroups: ["*"] # "" indicates the core API group
+  resources: ["*"]
+  verbs: ["*"]

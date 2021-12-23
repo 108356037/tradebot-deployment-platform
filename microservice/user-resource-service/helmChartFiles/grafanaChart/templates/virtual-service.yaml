@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ .Values.user }}-grafana-vs
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+  - {{ .Values.user }}.grafana.srv.algotrade.dev
+  gateways:
+  - user-resource/user-gateway
+  http:
+  - name: grafana-match
+    match:
+    - uri:
+        prefix: /
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: d-{{ trimSuffix "-grafana" .Release.Name }}-grafana.{{ .Release.Namespace }}.svc.cluster.local
+        port:
+          number: 3000

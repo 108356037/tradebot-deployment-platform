@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: strategy-manager-service
+  name: strategy-manager-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: strategy-manager-service
+      version: v1
+  #strategy: {}
+  template:
+    metadata:
+      labels:
+        app: strategy-manager-service
+        version: v1
+    spec:
+      serviceAccountName: k8s-101-role
+      initContainers:
+      - name: init-service
+        image: busybox:latest
+        command: ["/bin/sh"]
+        args:
+          - "-c"
+          - "until nslookup strategy-svc-mongo-srv.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for db setup; sleep 2; done" 
+
+      containers:
+      - image: localhost:5000/algotrade/strategy-manager-service
+        name: strategy-manager-service
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        env:
+        - name: MONGO_URI
+          value: mongodb://strategy-svc-mongo-srv.default.svc.cluster.local:27017
+        - name: RUN_MODE
+          value: release
+        - name: SRV_PORT
+          value: "8080"
+        - name: MAX_WAIT
+          value: "5"
+        - name: WRITE_TIMEOUT
+          value: "10"
+        - name: READ_TIMEOUT
+          value: "10"
+        - name: BOOTSTRAP_SERVER
+          value: my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
+        - name: SUBSCRIBE_TOPIC
+          value: resource
+        - name: PUBLISH_TOPIC
+          value: resource
+        - name: CONSUMER_GROUPID
+          value: strategy-manager-svc-group
+        - name: USER_RESOURCE_SERVER_HOST
+          value: user-resource-service-srv.default.svc.cluster.local 
+          
+        command: ["/app/main"]
+
+        # readinessProbe:
+        #   exec:
+        #     command:
+        #     - curl
+        #     - 
+        # resources: 
+        #   requests:
+        #     cpu: 300m
+        #     memory: 256Mi
+        #   limits:
+        #     cpu: 500m
+        #     memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: strategy-manager-service
+  name: strategy-manager-service-srv
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: http
+    name: http
+  selector:
+    app: strategy-manager-service

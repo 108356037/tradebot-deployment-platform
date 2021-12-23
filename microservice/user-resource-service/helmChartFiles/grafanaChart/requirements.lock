@@ -1,0 +1,6 @@
+dependencies:
+- name: grafana
+  repository: file://subcharts/grafana
+  version: 6.13.5
+digest: sha256:4012879a3830a98e6312c355f280c4e7094141c25b5898b0963a9cf0bdc01fb3
+generated: "2021-07-17T16:54:55.220277175+08:00"

@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: grpc-faas-service-vs
+  namespace: default
+spec:
+  hosts:
+  - grpc-faas-service-srv.default.svc.cluster.local
+  gateways:
+  - mesh
+  http:
+  - #match:
+    #- port: 9527
+    route:
+    - destination:
+        host: grpc-faas-service-srv.default.svc.cluster.local
+        port:
+          number: 50051

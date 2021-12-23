@@ -1,0 +1,22 @@
+Server:
+  RunMode: debug
+  HttpPort: 8080
+  ReadTimeout: 60
+  WriteTimeout: 60
+
+Redis:
+  Host: 127.0.0.1:6379
+  ConfigSet: 
+  - notify-keyspace-events: Egx
+  
+JwtKeys:
+  PrivKeyPath: /home/tsai/Desktop/app.rsa
+  PubKeyPath: /home/tsai/Desktop/app.rsa.pub
+  Issuer: test@algotrade.dev
+  Subject: test@algotrade.dev
+
+Aws:
+  Profile: sqs-account
+  Region: ap-southeast-1
+  QueueID: algtradeq.fifo
+  QueueURL: https://sqs.ap-southeast-1.amazonaws.com/641153820106/algotradeq.fifo

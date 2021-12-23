@@ -1,0 +1,31 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: user-resource-service-vs
+  namespace: default
+spec:
+  hosts:
+  - user-resource.api.algotrade.dev
+  - user-resource-service-srv.default.svc.cluster.local
+  gateways:
+  - platform-srv-gateway
+  - mesh
+  http:
+  - name: user-resource-service
+    match:
+    - uri:
+        prefix: /resources
+    route:
+    - destination:
+        host: user-resource-service-srv.default.svc.cluster.local
+        port:
+          number: 8080
+    corsPolicy:
+      allowOrigins:
+      - exact: https://srv.algotrade.dev
+      - exact: http://localhost:3000 #for react opened at local dev
+      allowHeaders:
+      - Content-Type
+      - Authorization
+      # - Cookie
+        

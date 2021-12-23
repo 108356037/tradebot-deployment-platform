@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: react-front-vs
+  namespace: default
+spec:
+  hosts:
+  - srv.algotrade.dev
+  gateways:
+  - platform-frontend-gw
+  - mesh
+  
+  http:
+  - match:
+    - uri:
+        regex: /.*
+
+    route:
+    - destination:
+        host: react-front-srv.default.svc.cluster.local
+        port:
+          number: 3000

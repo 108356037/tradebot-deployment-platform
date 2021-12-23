@@ -1,0 +1,10 @@
+{
+  "auth": {
+    "reactfront42b1ad70": {
+      "service": "Cognito",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false
+    }
+  }
+}

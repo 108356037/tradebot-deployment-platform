@@ -1,0 +1,19 @@
+#protects openfaas to only accept 
+#requests from grpc-service(default namespace)
+
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+ name: openfaas-gw-protection
+ namespace: openfaas
+spec:
+ selector:
+   matchLabels:
+    app: gateway
+ action: DENY
+ rules:
+ - from:
+   - source:
+       notNamespaces:
+       - "default"
+       - "openfaas"

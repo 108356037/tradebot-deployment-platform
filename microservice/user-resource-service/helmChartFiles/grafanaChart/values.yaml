@@ -1,0 +1,92 @@
+user: put-your-user-name-here
+
+auth: 
+  enabled: true
+
+grafana:
+
+  podLabels:
+    user: put-your-user-name-here
+
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 3000
+    targetPort: 3000
+    annotations: {}
+    labels: {}
+    portName: http
+
+  resources: 
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  adminUser: admin
+  adminPassword: password
+
+  admin:
+    existingSecret: ""
+    userKey: admin-user
+    passwordKey: admin-password
+
+  datasources: 
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+          - name: Postgres
+            type: postgres
+            url: algotrade-db.cj9sgxmlc4nc.ap-southeast-1.rds.amazonaws.com
+            user: grafana_read_only
+            secureJsonData:
+              password: 4af869cacf7e423d
+            database: trade_info
+            access: proxy
+            jsonData:
+              sslmode: disable # disable/require/verify-ca/verify-full
+              maxOpenConns: 0         # Grafana v5.4+
+              maxIdleConns: 2         # Grafana v5.4+
+              connMaxLifetime: 14400  # Grafana v5.4+
+              postgresVersion: 903 # 903=9.3, 904=9.4, 905=9.5, 906=9.6, 1000=10
+              timescaledb: false
+
+  grafana.ini:
+    security:
+      disable_initial_admin_creation: true
+      allow_embedding: true
+    # auth.jwt:
+    #   enabled: true
+    #   header_name
+    auth:
+      disable_login_form: true
+      #login_cookie_name: user
+      #disable_signout_menu: true
+      #disable_signin_menu: true
+    auth.anonymous:
+      enabled: true
+      org_name: Main Org.
+      org_role: Editor
+      hide_version: true
+
+    paths:
+      data: /var/lib/grafana/data
+      logs: /var/log/grafana
+      plugins: /var/lib/grafana/plugins
+      provisioning: /etc/grafana/provisioning
+    analytics:
+      check_for_updates: true
+    log:
+      mode: console
+    grafana_net:
+      url: https://grafana.net
+  ## grafana Authentication can be enabled with the following values on grafana.ini
+    server:
+          #The full public facing url you use in browser, used for redirects and emails
+      root_url: http://localhost:3000/
+      #root_url: http://localhost:3000/
+
+      ## uncomment this when using istio-ingress
+      #root_url: http://console.algotrade.dev/grafana/

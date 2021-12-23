@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ .Values.user }}-c9-vs
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+  - {{ .Values.user }}.c9.srv.algotrade.dev
+  gateways:
+  - user-resource/user-gateway
+  http:
+  - name: c9-match
+    match:
+    - uri:
+        prefix: "/"
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: d-{{ .Release.Name }}-svc.{{ .Release.Namespace }}.svc.cluster.local
+        port:
+          number: 8000
+    corsPolicy:
+      allowOrigins:
+      - exact: https://srv.algtrade.dev
+      - exact: http://localhost:3000

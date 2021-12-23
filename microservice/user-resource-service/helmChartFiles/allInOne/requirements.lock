@@ -1,0 +1,9 @@
+dependencies:
+- name: grafana
+  repository: https://grafana.github.io/helm-charts
+  version: 6.9.3
+- name: jupyter
+  repository: file://subcharts/jupyter
+  version: 0.1.0
+digest: sha256:ca0e3d65fe40989a7c453e4c4f870290a51aac62f63c80c1f6ed2f75e4df1055
+generated: "2021-07-07T15:56:20.230465352+08:00"

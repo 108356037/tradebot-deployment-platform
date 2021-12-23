@@ -1,0 +1,17 @@
+Server:
+  RunMode: debug
+  HttpPort: 8080
+  ReadTimeout: 120
+  WriteTimeout: 120
+
+Helm:
+  InitYamlPath: ./user-resource-pool-setup.yaml
+  ChartPath:
+    AllInOne: ./helmChartFiles/allInOne
+    Jupyter: ./helmChartFiles/jupyterChart
+    Grafana: ./helmChartFiles/grafanaChart
+    C9: ./helmChartFiles/c9
+  Namespace: user-resource
+
+Dev:
+  Mode: local

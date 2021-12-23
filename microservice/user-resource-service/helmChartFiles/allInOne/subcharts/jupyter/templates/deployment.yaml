@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{  .Values.app  }}
+  name: {{  .Release.Name  }}-jupyter
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app:  {{  .Values.app  }}
+      user: {{  .Values.user  }}
+  template:
+    metadata:
+      labels:
+        app: {{  .Values.app  }}
+        user: {{  .Values.user  }}
+    spec:
+      containers:
+      - image: 108356037/jupyter-playground:v1
+        name: {{  .Values.app  }}-pod
+        ports:
+          - containerPort: 8888
+        volumeMounts:
+        - name: {{ .Values.user }}-jupyter-storage
+          mountPath: /home/jovyan
+        resources:
+          requests:
+            memory: {{  .Values.ram.min | quote }}
+            cpu: {{  .Values.cpu.min | quote }}
+            {{ if .Values.enforcegpu }}
+            nvidia.com/gpu: 1
+            {{ end }}
+          limits:
+            memory: {{  .Values.ram.max | quote }}
+            cpu: {{  .Values.cpu.max | quote }}
+            {{ if .Values.enforcegpu }}
+            nvidia.com/gpu: 1
+            {{ end }}
+        command: ["jupyter-lab"]
+        args:
+          - "--no-browser"
+          - "--ip"
+          - '*'
+          - "--NotebookApp.token"
+          - ''
+          - "--NotebookApp.password"
+          - ''
+          - "--NotebookApp.base_url"
+          - '/playground'
+          - '--NotebookApp.disable_check_xsrf'
+          - 'True'
+          - '--NotebookApp.allow_remote_access'
+          - 'True'
+          - '--GatewayClient.ws_url'
+          - 'wss://lab.algotrade.dev/'
+      volumes:
+      - name: {{ .Values.user }}-jupyter-storage
+        # pointer to the configuration
+        persistentVolumeClaim:
+          claimName: {{ .Values.user }}-jupyter-pvc
+
+
+        

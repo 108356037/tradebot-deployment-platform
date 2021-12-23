@@ -1,0 +1,17 @@
+# apiVersion: projectcalico.org/v3
+# kind: GlobalNetworkPolicy
+# metadata:
+#   name: strict-flow-c9
+# spec:
+#   selector: app.kubernetes.io/name == 'c9-workspace'
+#   types:
+#   - Egress
+#   egress:
+#   - action: Allow
+#     destination:
+#       namespaceSelector: kubernetes.io/metadata.name == "kube-system"
+#       selector: k8s-app == "kube-dns"
+#   - action: Allow
+#     destination:
+#       namespaceSelector: kubernetes.io/metadata.name == "default"
+#       selector: app == "grpc-faas-service"

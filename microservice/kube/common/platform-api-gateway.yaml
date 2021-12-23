@@ -1,0 +1,57 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: platform-srv-gateway
+  namespace: default
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*.api.algotrade.dev"
+    tls:
+      httpsRedirect: true
+  - port:
+      number: 443
+      name: https-443
+      protocol: HTTPS
+    hosts:
+    - "*.api.algotrade.dev"
+    tls:
+      mode: SIMPLE
+      credentialName: platform-srv-gateway-cert-secret
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: platform-srv-gateway-cert
+  namespace: istio-system
+spec:
+  # Secret names are always required.
+  secretName: platform-srv-gateway-cert-secret
+  duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  subject:
+    organizations:
+    - testDevMain
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  usages:
+    - server auth
+    - client auth
+  #commonName: "*.algotrade.dev"
+  dnsNames:
+  - "*.api.algotrade.dev"
+  # - "*.grafana.ur.algotrade.dev"
+  # - "*.jupyter.ur.algotrade.dev"
+  issuerRef:
+    name: cluster-ca-issuer
+    kind: ClusterIssuer

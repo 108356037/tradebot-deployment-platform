@@ -1,0 +1,35 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ .Values.user }}-jupyter-vs
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+  - {{ .Values.user }}.jupyter.srv.algotrade.dev
+  gateways:
+  - user-resource/user-gateway
+  http:
+  - name: jupyter-match
+    match:
+    - uri:
+        prefix: "/playground"
+    - uri:
+        prefix: /static
+    rewrite:
+      uri: "/playground"
+    route:
+    - destination:
+        host: d-{{ .Release.Name }}-svc.{{ .Release.Namespace }}.svc.cluster.local
+        port:
+          number: 8888
+    corsPolicy:
+      allowOrigins:
+      - exact: https://srv.algtrade.dev
+      - exact: http://localhost:3000
+      # allowMethods:
+      # - POST
+      # - GET
+      # - OPTIONS
+      # - PUT
+      # allowHeaders:
+      # - Authorization

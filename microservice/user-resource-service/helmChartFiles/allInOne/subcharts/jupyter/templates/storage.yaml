@@ -1,0 +1,31 @@
+#local storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.user }}-jupyter-pvc
+  namespace: {{ .Release.Namespace }}
+spec:
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce 
+  resources:
+    requests:
+      storage: {{ .Values.storage.local }}
+  volumeMode: Filesystem
+
+---
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: local-storage
+# spec:
+#   storageClassName: mylocalstorage
+#   accessModes:
+#     - ReadWriteOnce
+#   capacity:
+#     storage: {{ .Values.storage.local }}
+#   hostPath:
+#     path: "/media/k8s-volume"
+#     type: DirectoryOrCreate
+#   volumeMode: Filesystem
+  

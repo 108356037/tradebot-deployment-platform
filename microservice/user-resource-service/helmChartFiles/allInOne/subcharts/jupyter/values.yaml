@@ -1,0 +1,21 @@
+app: user-trading-playground
+
+ingress:
+  enable: false
+  name: user-lab-ingress
+  
+enforcegpu: false
+
+ram: 
+  max: 10Gi
+  min: 8Gi
+
+cpu:
+  max: 4000m
+  min: 2000m
+
+storage: 
+  local: 4Gi
+
+nvidia-device-plugin:
+  enabled: false

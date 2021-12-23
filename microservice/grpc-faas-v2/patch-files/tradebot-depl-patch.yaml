@@ -1,0 +1,10 @@
+spec:
+  template:
+    metadata:
+      labels:
+        identity: tradebot
+        faas_function: exist-to-avoid-sidecar-injection
+    spec:
+      securityContext:
+        runAsUser: 101
+        runAsGroup: 101

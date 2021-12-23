@@ -1,0 +1,184 @@
+apiVersion: skaffold/v2beta5
+
+kind: Config
+
+build:
+  tagPolicy:
+    sha256: {}
+  local:
+    concurrency: 0
+    useBuildkit: false
+    useDockerCLI: false
+    push: false
+  artifacts:
+    - image: localhost:5000/algotrade/user-resource-service
+      context: ./user-resource-service
+      docker:
+        dockerfile: Dockerfile
+        noCache: false
+      sync:
+        manual:
+          - src: "*"
+            dest: "/app"  #find a way to deal multistage build
+
+    - image: localhost:5000/algotrade/react-front
+      context: ./react-front
+      docker:
+        dockerfile: Dockerfile
+        noCache: false
+      sync:
+        manual:
+          - src: "./src"
+            dest: "/app/src" 
+
+    - image: localhost:5000/algotrade/grpc-faas-service
+      context: ./grpc-faas-v2
+      docker:
+        dockerfile: Dockerfile
+        noCache: false
+      sync:
+        manual:
+          - src: "*"
+            dest: "/app"  #find a way to deal multistage build
+
+    - image: localhost:5000/algotrade/strategy-manager-service
+      context: ./strategy-manager
+      docker:
+        dockerfile: Dockerfile
+        noCache: false
+      sync:
+        manual:
+          - src: "*"
+            dest: "/app"  #find a way to deal multistage build
+
+    - image: localhost:5000/algotrade/tradebot-store-service
+      context: ./tradebot-store
+      docker:
+        dockerfile: Dockerfile
+        noCache: false
+      sync:
+        manual:
+          - src: "*"
+            dest: "/app"  #find a way to deal multistage build
+
+
+deploy:
+  kubectl:
+    manifests:
+      - ./kube/common/*
+      - ./kube/frontend/*
+      - ./kube/grpc-faas-service/*
+      - ./kube/security/*
+      - ./kube/strategy-manager-service/*
+      - ./kube/user-resource-service/*
+      - ./kube/tradebot-store/*
+       
+
+
+profiles:
+  - name: strategy-manager
+    build:
+      tagPolicy:
+        sha256: {}
+      local:
+        concurrency: 0
+        useBuildkit: false
+        useDockerCLI: false
+        push: false
+
+      artifacts:
+        - image: localhost:5000/algotrade/strategy-manager-service
+          context: ./strategy-manager
+          docker:
+            dockerfile: Dockerfile
+            noCache: false      
+    deploy:
+      kubectl:
+        manifests:
+          - ./kube/strategy-manager-service/*
+
+
+  - name: user-resource
+    build:
+      tagPolicy:
+        sha256: {}
+      local:
+        concurrency: 0
+        useBuildkit: false
+        useDockerCLI: false
+        push: false
+
+      artifacts:
+        - image: localhost:5000/algotrade/user-resource-service
+          context: ./user-resource-service
+          docker:
+            dockerfile: Dockerfile
+            noCache: false      
+    deploy:
+      kubectl:
+        manifests:
+          - ./kube/user-resource-service/*
+
+  - name: grpc-faas
+    build:
+      tagPolicy:
+        sha256: {}
+      local:
+        concurrency: 0
+        useBuildkit: false
+        useDockerCLI: false
+        push: false
+
+      artifacts:
+        - image: localhost:5000/algotrade/grpc-faas-service
+          context: ./grpc-faas-v2
+          docker:
+            dockerfile: Dockerfile
+            noCache: false      
+    deploy:
+      kubectl:
+        manifests:
+          - ./kube/grpc-faas-service/*
+
+
+  - name: react
+    build:
+      tagPolicy:
+        sha256: {}
+      local:
+        concurrency: 0
+        useBuildkit: false
+        useDockerCLI: false
+        push: false
+
+      artifacts:
+        - image: localhost:5000/algotrade/react-front
+          context: ./react-front
+          docker:
+            dockerfile: Dockerfile
+            noCache: false      
+    deploy:
+      kubectl:
+        manifests:
+          - ./kube/frontend/*
+
+  - name: tradebot-store
+    build:
+      tagPolicy:
+        sha256: {}
+      local:
+        concurrency: 0
+        useBuildkit: false
+        useDockerCLI: false
+        push: false
+
+      artifacts:
+        - image: localhost:5000/algotrade/tradebot-store-service
+          context: ./tradebot-store
+          docker:
+            dockerfile: Dockerfile
+            noCache: false      
+    deploy:
+      kubectl:
+        manifests:
+          - ./kube/tradebot-store/*

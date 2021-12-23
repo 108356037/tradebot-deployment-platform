@@ -1,0 +1,38 @@
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: {{ .Values.global.user }}-request-auth
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      user: {{ .Values.global.user }}
+  jwtRules:
+  - issuer: https://cognito-idp.ap-southeast-1.amazonaws.com/ap-southeast-1_z2fADDubD
+    jwksUri: https://cognito-idp.ap-southeast-1.amazonaws.com/ap-southeast-1_z2fADDubD/.well-known/jwks.json
+    #forwardOriginalToken: true
+    fromHeaders:
+    - name: Authorization
+      prefix: "Bearer "
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ .Values.global.user }}-require-auth
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      user: {{ .Values.global.user }}
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        requestPrincipals: ["https://cognito-idp.ap-southeast-1.amazonaws.com/ap-southeast-1_z2fADDubD/{{ .Values.global.user }}"]
+
+    when:
+    - key: request.auth.claims[cognito:username]
+      values: [{{ .Values.global.user | quote }}]
+    
+    - key: request.auth.claims[token_use]
+      values: ["id"]

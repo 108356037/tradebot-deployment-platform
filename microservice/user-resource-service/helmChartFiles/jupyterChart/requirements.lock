@@ -1,0 +1,6 @@
+dependencies:
+- name: jupyter
+  repository: file://subcharts/jupyter
+  version: 0.1.0
+digest: sha256:ab7ee4867a5976f877e5f10c076e841c7098d135920c47dec06def30748ca8d9
+generated: "2021-07-15T18:08:42.759354156+08:00"

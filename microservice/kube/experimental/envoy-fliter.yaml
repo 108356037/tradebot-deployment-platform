@@ -1,0 +1,103 @@
+# apiVersion: networking.istio.io/v1alpha3
+# kind: EnvoyFilter
+# metadata:
+#   name: filter-local-ratelimit-svc
+#   namespace: istio-system
+# spec:
+#   workloadSelector:
+#     labels:
+#       app: grpc-faas-service
+#   configPatches:
+#     - applyTo: HTTP_FILTER
+#       match:
+#         context: SIDECAR_INBOUND
+#         listener:
+#           portNumber: 50051
+#           filterChain:
+#             filter:
+#               name: "envoy.filters.network.http_connection_manager"
+#       patch:
+#         operation: INSERT_BEFORE
+#         value:
+#           name: envoy.filters.http.local_ratelimit
+#           typed_config:
+#             "@type": type.googleapis.com/udpa.type.v1.TypedStruct
+#             type_url: type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+#             value:
+#               stat_prefix: http_local_rate_limiter
+#               token_bucket:
+#                 max_tokens: 20
+#                 tokens_per_fill: 20
+#                 fill_interval: 60s
+#               filter_enabled:
+#                 runtime_key: local_rate_limit_enabled
+#                 default_value:
+#                   numerator: 100
+#                   denominator: HUNDRED
+#               filter_enforced:
+#                 runtime_key: local_rate_limit_enforced
+#                 default_value:
+#                   numerator: 100
+#                   denominator: HUNDRED
+#               response_headers_to_add:
+#                 - append: false
+#                   header:
+#                     key: x-local-rate-limit
+#                     value: 'true'
+---
+# apiVersion: networking.istio.io/v1alpha3
+# kind: EnvoyFilter
+# metadata:
+#   name: filter-local-ratelimit-out-c9
+#   namespace: istio-system
+# spec:
+#   workloadSelector:
+#     labels:
+#       #user: bd63c5d3-d866-4819-afee-6d34c500a069-c9
+#       app.kubernetes.io/name: c9-workspace
+#   configPatches:
+#       # https://istio.io/latest/docs/reference/config/networking/envoy-filter/#EnvoyFilter-ApplyTo
+#     - applyTo: HTTP_FILTER
+
+#       match:
+#         context: SIDECAR_OUTBOUND  # ANY, SIDECAR_INBOUND, SIDECAR_OUTBOUND, GATEWAY
+#         listener:
+#           #portNumber: 15020 #似乎在outbound會不管用
+#           filterChain:
+#             applicationProtocols: h2  #如果不加htttp2，會連sudo apt-get update都無法正常執行
+#             #destinationPort: 15020 #這個也怪怪的要研究
+#             #sni: 
+#             filter:
+#               name: "envoy.filters.network.http_connection_manager"
+#               #subFilter:
+#         # routeConfiguration:
+#         #   portNumber: 8000
+                
+#       patch:
+#         operation: INSERT_BEFORE
+#         value:
+#           name: envoy.filters.http.local_ratelimit
+#           typed_config:
+#             "@type": type.googleapis.com/udpa.type.v1.TypedStruct
+#             type_url: type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+#             value:
+#               stat_prefix: http_local_rate_limiter
+#               token_bucket:
+#                 max_tokens: 15
+#                 tokens_per_fill: 15
+#                 fill_interval: 60s
+#               filter_enabled:
+#                 runtime_key: local_rate_limit_enabled
+#                 default_value:
+#                   numerator: 100
+#                   denominator: HUNDRED
+#               filter_enforced:
+#                 runtime_key: local_rate_limit_enforced
+#                 default_value:
+#                   numerator: 100
+#                   denominator: HUNDRED
+#               response_headers_to_add:
+#                 - append: false
+#                   header:
+#                     key: x-local-rate-limit
+#                     value: 'true'

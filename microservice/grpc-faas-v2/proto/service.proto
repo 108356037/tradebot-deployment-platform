@@ -1,0 +1,145 @@
+syntax = "proto3";
+
+option go_package = "./proto";
+
+service Upload { rpc UploadFile(stream UploadReq) returns (UploadRes); }
+service Build { rpc BuildFunc(BuildReq) returns (BuildRes); }
+service Push { rpc PushFunc(PushReq) returns (PushRes); }
+
+// these are for interval function strategy
+service Deploy { rpc DeployFunc(DeployReq) returns (DeployRes); }
+service Remove { rpc RemoveFunc(RemoveReq) returns (RemoveRes); }
+service Schedule { rpc ScheduleFunc(ScheduleReq) returns (ScheduleRes); }
+service AsyncInvoke {
+  rpc AsyncInvokeFunc(AsyncInvokeReq) returns (AsyncInvokeRes);
+}
+
+// these are for forever running tradebot
+service DeployBot { rpc DeployBotFunc(DeployBotReq) returns (DeployBotRes); }
+service RemoveBot { rpc RemoveBotFunc(RemoveBotReq) returns (RemoveBotRes); }
+service PublishBot {
+  rpc PublishBotFunc(PublishBotReq) returns (PublishBotRes);
+}
+
+enum StatusCode {
+  Unknown = 0;
+  Ok = 1;
+  Failed = 2;
+}
+
+message UploadReq {
+  bytes Content = 1;
+  string FuncName = 2;
+  string UserNS = 3;
+}
+
+message UploadRes {
+  string Message = 1;
+  StatusCode Code = 2;
+}
+
+// faas-cli build
+// --image repo/userNS-funcName --name funcName
+// --lang Lang --handler path/to/uncompressedTar
+message BuildReq {
+  string Lang = 1;
+  string FuncName = 2;
+  string UserNS = 3;
+}
+
+message BuildRes {
+  string Message = 1;
+  StatusCode Code = 2;
+}
+
+// docker push repo/userNS-funcName
+message PushReq {
+  string FuncName = 1;
+  string UserNS = 2;
+}
+
+message PushRes {
+  string Message = 1;
+  StatusCode Code = 2;
+}
+
+// faas-cli deploy
+// --name funcName --image repo/userNS-funcName
+// -n userNs
+message DeployReq {
+  string FuncName = 1;
+  string UserNS = 2;
+}
+
+message DeployRes {
+  string Message = 1;
+  StatusCode Code = 2;
+}
+
+message DeployBotReq {
+  string BotName = 1;
+  string UserNS = 2;
+  string Lang = 3;
+}
+
+message DeployBotRes {
+  string Message = 1;
+  StatusCode Code = 2;
+}
+
+message RemoveBotReq {
+  string BotName = 1;
+  string UserNS = 2;
+}
+
+message RemoveBotRes {
+  string Message = 1;
+  StatusCode Code = 2;
+}
+
+message PublishBotReq {
+  string BotName = 1;
+  string UserNS = 2;
+  string Privacy = 3;
+}
+
+message PublishBotRes {
+  string Message = 1;
+  StatusCode Code = 2;
+}
+// faas-cli deploy
+// --name funcName --image repo/userNS-funcName
+// -n userNs --annotation topic="cron-function"  --annotation schedule="*/1 * *
+// * *" --env write_debug=true
+message ScheduleReq {
+  string FuncName = 1;
+  string UserNS = 2;
+  string Schedule = 3;
+}
+
+message ScheduleRes {
+  string Message = 1;
+  StatusCode Code = 2;
+}
+
+// faas-cli remove funcName -n userNs
+message RemoveReq {
+  string FuncName = 1;
+  string UserNS = 2;
+}
+
+message RemoveRes {
+  string Message = 1;
+  StatusCode Code = 2;
+}
+
+// curl -X POST http://OPENFAAS_URL:PORT/async-function/{FUNC_NAME}.{NAMESPACE}
+message AsyncInvokeReq {
+  string FuncName = 1;
+  string UserNS = 2;
+}
+
+message AsyncInvokeRes {
+  string Message = 1;
+  StatusCode Code = 2;
+}

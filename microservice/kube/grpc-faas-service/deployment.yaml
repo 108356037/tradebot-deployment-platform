@@ -1,0 +1,138 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: grpc-faas-service
+  name: grpc-faas-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grpc-faas-service
+      version: v1
+  #strategy: {}
+  template:
+    metadata:
+      labels:
+        version: v1
+        app: grpc-faas-service
+    spec:
+      serviceAccountName: k8s-101-role
+
+      initContainers:
+      - name: secret-populator
+        image: 108356037/kube-and-helm:ubuntu
+        command: ["/bin/sh"]
+        args: 
+          - -c
+          - kubectl get secret basic-auth --namespace=openfaas -oyaml | grep -v '^\s*namespace:\s' | kubectl create --namespace=default -f - || true
+
+      containers:
+      - image: localhost:5000/algotrade/grpc-faas-service
+        name: grpc-faas-service
+        ports:
+          - containerPort: 50051
+            name: grpc
+            protocol: TCP
+        env:
+          # - name: IMAGE_REPO
+          #   value: "108356037"
+          - name: STORE_IMAGE_REPO
+            value: localhost:6500
+          - name: IMAGE_REPO
+            value: localhost:6000
+          - name: SRV_PORT
+            value: "50051"
+          - name: OPENFAAS_URL
+            value: "gateway.openfaas.svc.cluster.local:8080"
+          - name: IMAGE_REPO_PWD
+            valueFrom: 
+              secretKeyRef:
+                key: my-repo-secret
+                name: docker-repo-secret
+          - name: OPENFAAS_BASIC_AUTH
+            valueFrom:
+              secretKeyRef:
+                key: basic-auth-password
+                name: basic-auth
+          - name: MAX_WAIT
+            value: "5"
+          - name: BOOTSTRAP_SERVER
+            value: my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
+          - name: SUBSCRIBE_TOPIC
+            value: resource
+          - name: PUBLISH_TOPIC
+            value: resource
+          - name: CONSUMER_GROUPID
+            value: grpc-faas-svc-group
+          # - name: NODE_IP
+          #   valueFrom:
+          #     fieldRef:
+          #       fieldPath: status.hostIP
+          # - name: DOCKER_HOST
+          #   value: tcp://localhost:2375  
+        # command: ["/bin/sh"]
+        # args: ["-c","docker login -u 108356037 -p ${IMAGE_REPO_PWD}; faas-cli login -p ${OPENFAAS_BASIC_AUTH}; /app/main"]
+        command: ["/app/entrypoint.sh"]
+
+        # resources: 
+        #   requests:
+        #     cpu: 300m
+        #     memory: 256Mi 
+        #   limits:
+        #     cpu: 500m
+        #     memory: 512Mi
+        
+        volumeMounts: 
+          - mountPath: /var/run 
+            name: docker-sock 
+
+          - mountPath: /tmp/faasCode
+            name: grpc-faas-claim
+
+      volumes: 
+      - name: docker-sock 
+        hostPath: 
+            path: /var/run 
+      
+      - name: grpc-faas-claim
+        persistentVolumeClaim:
+          claimName: grpc-faas-claim
+
+      # - image: docker:20.10-dind
+      #   name: dind-daemon
+      #   ports:
+      #     - containerPort: 2375
+      #   resources: 
+      #     requests:
+      #       cpu: 500m
+      #       memory: 256Mi 
+      #     limits:
+      #       cpu: 750m
+      #       memory: 512Mi
+      #   command:
+      #     - "dockerd"
+      #   securityContext:
+      #     privileged: true 
+      #   volumeMounts: 
+      #     - name: docker-graph-storage 
+      #       mountPath: /var/lib/docker
+
+      # volumes: 
+      # - name: docker-graph-storage 
+      #   emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: grpc-faas-service
+  name: grpc-faas-service-srv
+spec:
+  ports:
+  - port: 50051
+    protocol: TCP #用grpc有影響嗎？
+    targetPort: grpc
+    name: grpc-faas
+  selector:
+    app: grpc-faas-service

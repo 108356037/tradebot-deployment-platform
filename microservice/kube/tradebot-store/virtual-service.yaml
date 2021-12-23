@@ -1,0 +1,29 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: tradebot-store-service-vs
+  namespace: default
+spec:
+  hosts:
+  - tradebot.api.algotrade.dev
+  - tradebot-store-service-srv.default.svc.cluster.local
+  gateways:
+  - platform-srv-gateway
+  - mesh
+  http:
+  - name: tradebot-store-service
+    match:
+    - uri:
+        prefix: /tradebot
+    route:
+    - destination:
+        host: tradebot-store-service-srv.default.svc.cluster.local
+        port:
+          number: 8080
+    corsPolicy:
+      allowOrigins:
+      - exact: https://srv.algotrade.dev
+      - exact: http://localhost:3000 #for react opened at local dev
+      allowHeaders:
+      - Content-Type
+      - Authorization

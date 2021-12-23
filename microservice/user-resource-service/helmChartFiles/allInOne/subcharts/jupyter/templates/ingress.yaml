@@ -1,0 +1,46 @@
+# apiVersion: networking.k8s.io/v1beta1
+# kind: Ingress
+# metadata:
+#   name: {{  .Values.ingress.name  }}
+#   annotations:
+#     nginx.ingress.kubernetes.io/proxy-body-size: 64m
+# spec:
+#   rules:
+#     - host: xip.io
+#       http:
+#         paths:
+#           - backend:
+#               serviceName: {{  .Values.app  }}-nodeport
+#               servicePort: 8888
+{{ if .Values.ingress.enable }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{  .Values.ingress.name  }}
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    cert-manager.io/cluster-issuer: cluster-ca-issuer
+    # nginx.ingress.kubernetes.io/configuration-snippet: |
+    #   more_set_headers "Content-Security-Policy: frame-ancestors *.algotrade.dev";
+  #namespace: jhub
+  namespace: default
+spec:
+  ingressClassName: nginx
+  
+  tls:
+    - hosts:
+      - "algotrade.dev"
+      secretName: jhub-tls
+
+  rules:
+  - host: algotrade.dev
+    http:
+      paths:
+      - path: /(.*)
+        backend:
+          service:
+            name: jupyter-svc
+            port:
+              number: 8888
+        pathType: Prefix
+{{ end }}

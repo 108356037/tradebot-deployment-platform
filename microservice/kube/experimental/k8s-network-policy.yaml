@@ -1,0 +1,26 @@
+# ---
+# kind: NetworkPolicy
+# apiVersion: networking.k8s.io/v1
+# metadata:
+#   name: allow-egress-same-namespace
+#   namespace: 8f357bb5-16fe-41ce-85b5-694f36851360
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: c9-workspace
+#   egress:
+#   - to:
+#     - namespaceSelector: 
+#         matchLabels:
+#           kubernetes.io/metadata.name: kube-system
+#       podSelector:
+#         matchLabels:
+#           k8s-app: kube-dns
+
+#   - to:
+#     - namespaceSelector: 
+#         matchLabels:
+#           kubernetes.io/metadata.name: default
+#       podSelector:
+#         matchLabels:
+#           app: grpc-faas-service

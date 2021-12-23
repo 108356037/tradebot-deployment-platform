@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: user-resource-service
+  name: user-resource-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-resource-service
+      version: v1
+  #strategy: {}
+  template:
+    metadata:
+      labels:
+        app: user-resource-service
+        version: v1
+    spec:
+      serviceAccountName: k8s-101-role
+      containers:
+      - image: localhost:5000/algotrade/user-resource-service
+        name: user-resource-service
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        env:
+        - name: RUN_MODE
+          value: release
+        - name: MAX_WAIT
+          value: "5"
+        - name: BOOTSTRAP_SERVER
+          value: my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
+        - name: SUBSCRIBE_TOPIC
+          value: resource
+        - name: PUBLISH_TOPIC
+          value: resource
+        - name: CONSUMER_GROUPID
+          value: user-resource-svc-group
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 90
+        # resources: 
+        #   requests:
+        #     cpu: 300m
+        #     memory: 256Mi
+        #   limits:
+        #     cpu: 500m
+        #     memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: user-resource-service
+  name: user-resource-service-srv
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: http
+    name: http
+  selector:
+    app: user-resource-service

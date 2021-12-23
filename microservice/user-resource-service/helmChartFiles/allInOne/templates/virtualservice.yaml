@@ -1,0 +1,40 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.global.user }}-vs
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+  - {{ .Values.global.user }}.srv.algotrade.dev
+  gateways:
+  - user-gateway
+  http:
+  {{- if .Values.grafana.enabled }}
+  - name: grafana-match
+    match:
+    - uri:
+        prefix: /grafana/
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: {{ .Values.global.user }}-grafana.{{ .Release.Namespace }}.svc.cluster.local
+        port:
+          number: 3000
+  {{- end }}
+
+  {{- if .Values.jupyter.enabled }}
+  - name: jupyter-match
+    match:
+    - uri:
+        prefix: "/playground"
+    - uri:
+        prefix: /static
+    rewrite:
+      uri: "/playground"      
+    route:
+    - destination:
+        host: {{ .Values.global.user }}-jupyter-svc.{{ .Release.Namespace }}.svc.cluster.local
+        port:
+          number: 8888
+  {{- end }}

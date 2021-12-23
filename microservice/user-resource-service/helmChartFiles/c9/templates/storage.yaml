@@ -1,0 +1,14 @@
+#local storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.user }}-c9-pvc
+  namespace: {{ .Release.Namespace }}
+spec:
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce 
+  resources:
+    requests:
+      storage: {{ .Values.storage.local }}
+  volumeMode: Filesystem

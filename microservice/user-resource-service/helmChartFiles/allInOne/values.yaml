@@ -1,0 +1,230 @@
+global:
+  user: mock-user
+
+grafana:
+  enabled: true
+
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 3000
+    targetPort: 3000
+    annotations: {}
+    labels: {}
+    portName: http
+
+  ingress:
+    enabled: false
+    # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
+    # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
+    # ingressClassName: nginx
+    # Values can be templated
+    annotations: 
+      #kubernetes.io/ingress.class: "nginx"
+      nginx.ingress.kubernetes.io/rewrite-target: /$1
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      cert-manager.io/cluster-issuer: cluster-ca-issuer
+      #cert-manager.io/issuer: ca-issuer 
+      # nginx.ingress.kubernetes.io/configuration-snippet: |
+      #   more_set_headers "X-Frame-Options: SAMEORIGIN";
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        more_set_headers "Content-Security-Policy: frame-ancestors *.algotrade.dev";
+    labels: {}
+    ingressClassName: nginx
+    #path: /grafana/?(.*)
+    #path: /(.*)
+
+    # pathType is only for k8s > 1.19
+    pathType: Prefix
+
+    hosts:
+      #- grafana.algotrade.dev
+      - "console.algotrade.dev"
+
+    ## Extra paths to prepend to every host configuration. This is useful when working with annotation based services.
+    extraPaths: 
+    - path: /*
+      backend:
+        serviceName: ssl-redirect
+        servicePort: use-annotation
+    # Or for k8s > 1.19
+    - path: /*
+      pathType: Prefix
+      backend:
+        service:
+          name: ssl-redirect
+          port:
+            name: service
+
+
+    tls: 
+    - secretName: grafana-tls
+      hosts:
+        - "console.algotrade.dev"
+
+  resources: 
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  # Administrator credentials when not using an existing secret (see below)
+  adminUser: admin
+  adminPassword: password
+
+  # Use an existing secret for the admin user.
+  admin:
+    existingSecret: ""
+    userKey: admin-user
+    passwordKey: admin-password
+
+  plugins: 
+    # - PostgreSQL
+    # - grafana-clock-panel
+
+  ## Configure grafana datasources
+  ## ref: http://docs.grafana.org/administration/provisioning/#datasources
+  ##
+  datasources: 
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+          - name: Postgres
+            type: postgres
+            url: algotrade-db.cj9sgxmlc4nc.ap-southeast-1.rds.amazonaws.com
+            user: grafana_read_only
+            secureJsonData:
+              password: 4af869cacf7e423d
+            database: trade_info
+            access: proxy
+            jsonData:
+              sslmode: disable # disable/require/verify-ca/verify-full
+              maxOpenConns: 0         # Grafana v5.4+
+              maxIdleConns: 2         # Grafana v5.4+
+              connMaxLifetime: 14400  # Grafana v5.4+
+              postgresVersion: 903 # 903=9.3, 904=9.4, 905=9.5, 906=9.6, 1000=10
+              timescaledb: false
+
+  ## Configure grafana dashboard providers
+  ## ref: http://docs.grafana.org/administration/provisioning/#dashboards
+  ##
+  ## `path` must be /var/lib/grafana/dashboards/<provider_name>
+  ##
+  dashboardProviders: {}
+  #  dashboardproviders.yaml:
+  #    apiVersion: 1
+  #    providers:
+  #    - name: 'default'
+  #      orgId: 1
+  #      folder: ''
+  #      type: file
+  #      disableDeletion: false
+  #      editable: true
+  #      options:
+  #        path: /var/lib/grafana/dashboards/default
+
+  ## Configure grafana dashboard to import
+  ## NOTE: To use dashboards you must also enable/configure dashboardProviders
+  ## ref: https://grafana.com/dashboards
+  ##
+  ## dashboards per provider, use provider name as key.
+  ##
+  dashboards: {}
+    # default:
+    #   some-dashboard:
+    #     json: |
+    #       $RAW_JSON
+    #   custom-dashboard:
+    #     file: dashboards/custom-dashboard.json
+    #   prometheus-stats:
+    #     gnetId: 2
+    #     revision: 2
+    #     datasource: Prometheus
+    #   local-dashboard:
+    #     url: https://example.com/repository/test.json
+    #     token: ''
+    #   local-dashboard-base64:
+    #     url: https://example.com/repository/test-b64.json
+    #     token: ''
+    #     b64content: true
+
+  ## Reference to external ConfigMap per provider. Use provider name as key and ConfigMap name as value.
+  ## A provider dashboards must be defined either by external ConfigMaps or in values.yaml, not in both.
+  ## ConfigMap data example:
+  ##
+  ## data:
+  ##   example-dashboard.json: |
+  ##     RAW_JSON
+  ##
+  dashboardsConfigMaps: {}
+  #  default: ""
+
+  ## Grafana's primary configuration
+  ## NOTE: values in map will be converted to ini format
+  ## ref: http://docs.grafana.org/installation/configuration/
+  ##
+  grafana.ini:
+    security:
+      disable_initial_admin_creation: true
+      allow_embedding: true
+    # auth.jwt:
+    #   enabled: true
+    #   header_name
+    auth:
+      disable_login_form: true
+      #login_cookie_name: user
+      #disable_signout_menu: true
+      #disable_signin_menu: true
+    auth.anonymous:
+      enabled: true
+      org_name: Main Org.
+      org_role: Editor
+      hide_version: true
+
+    paths:
+      data: /var/lib/grafana/data
+      logs: /var/log/grafana
+      plugins: /var/lib/grafana/plugins
+      provisioning: /etc/grafana/provisioning
+    analytics:
+      check_for_updates: true
+    log:
+      mode: console
+    grafana_net:
+      url: https://grafana.net
+  ## grafana Authentication can be enabled with the following values on grafana.ini
+    server:
+          #The full public facing url you use in browser, used for redirects and emails
+      root_url: http://localhost:3000/grafana/
+      #root_url: http://localhost:3000/
+
+      ## uncomment this when using istio-ingress
+      #root_url: http://console.algotrade.dev/grafana/
+
+ 
+jupyter:
+  enabled: true
+
+  app: user-trading-playground
+
+  ingress:
+    enable: false
+    name: user-lab-ingress
+    
+  enforcegpu: false
+
+  ram: 
+    max: 2Gi
+    min: 1Gi
+
+  cpu:
+    max: 2000m
+    min: 1000m
+
+  storage: 
+    local: 2Gi
+
+  nvidia-device-plugin:
+    enabled: false

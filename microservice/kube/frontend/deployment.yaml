@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: react-front
+  name: react-front
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: react-front
+  strategy:
+    # rollingUpdate:
+    #   maxUnavailable: 1
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: react-front
+    spec:
+      containers:
+      - image: localhost:5000/algotrade/react-front
+        name: react-front
+        ports:
+          - containerPort: 3000
+            name: http
+            protocol: TCP
+        env:
+        - name: REACT_APP_APP_DOMAIN
+          value: srv.algotrade.dev
+        - name: REACT_APP_API_HOST
+          value: api.algotrade.dev
+        command: ["/app/entrypoint.sh"]
+        # resources: 
+        #   requests:
+        #     cpu: 700m
+        #     memory: 1Gi
+        #   limits:
+        #     cpu: 1500m
+        #     memory: 2Gi
+        
+      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: react-front
+  name: react-front-srv
+spec:
+  ports:
+  - port: 3000
+    protocol: TCP
+    targetPort: http
+    name: http
+  selector:
+    app: react-front
+

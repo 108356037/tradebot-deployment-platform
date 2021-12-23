@@ -1,0 +1,35 @@
+kind: RequestAuthentication
+apiVersion: security.istio.io/v1beta1
+metadata:
+  name: strategy-manager-request-auth
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: strategy-manager-service
+  jwtRules:
+    - fromHeaders:
+        - name: Authorization
+          prefix: "Bearer "
+      issuer: >-
+        https://cognito-idp.ap-southeast-1.amazonaws.com/ap-southeast-1_z2fADDubD
+      jwksUri: >-
+        https://cognito-idp.ap-southeast-1.amazonaws.com/ap-southeast-1_z2fADDubD/.well-known/jwks.json
+      forwardOriginalToken: true
+---
+kind: AuthorizationPolicy
+apiVersion: security.istio.io/v1beta1
+metadata:
+  name: strategy-manager-auth-policy
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: strategy-manager-service
+  rules:
+    - when:
+        - key: 'request.auth.claims[iss]'
+          values:
+            - >-
+              https://cognito-idp.ap-southeast-1.amazonaws.com/ap-southeast-1_z2fADDubD
+  action: ALLOW

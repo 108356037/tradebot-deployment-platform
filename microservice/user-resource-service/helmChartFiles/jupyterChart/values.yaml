@@ -1,0 +1,27 @@
+user: put-your-user-name-here
+
+auth: 
+  enabled: true
+
+jupyter:
+  app: user-trading-playground
+
+  ingress:
+    enable: false
+    name: user-lab-ingress
+    
+  enforcegpu: false
+
+  ram: 
+    max: 256Mi
+    min: 128Mi
+
+  cpu:
+    max: 200m
+    min: 100m
+
+  storage: 
+    local: 1Gi
+
+  nvidia-device-plugin:
+    enabled: false

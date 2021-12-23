@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo-db
+  labels:
+    app: strategy-svc-mongo
+spec:
+  serviceName: strategy-svc-mongo-srv
+  replicas: 1
+  selector:
+    matchLabels:
+      app: strategy-svc-mongo
+  template:
+    metadata:
+      labels:
+        app: strategy-svc-mongo
+    spec:
+      containers:
+      - image: mongo:5.0.3
+        name: strategy-svc-mongo-container
+        resources: 
+          requests:
+            cpu: 200m
+            memory: 128Mi
+          limits:
+            cpu: 300m
+            memory: 256Mi
+
+        volumeMounts:
+        - mountPath: /data/db
+          name: mongo-claim0
+
+      volumes:
+      - name: mongo-claim0
+        persistentVolumeClaim:
+          claimName: mongo-claim0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: strategy-svc-mongo-srv
+spec:
+  selector:
+    app: strategy-svc-mongo
+  ports:
+    - port: 27017
+      targetPort: 27017
+      appProtocol: mongo
+      name: db
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-claim0
+spec:
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: standard
+  accessModes:
+  - ReadWriteOnce

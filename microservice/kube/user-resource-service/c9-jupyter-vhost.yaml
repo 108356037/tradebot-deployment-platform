@@ -1,0 +1,68 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: user-resource
+  labels: 
+    istio-injection: enabled
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: user-gateway
+  namespace: user-resource
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*.grafana.srv.algotrade.dev"
+    - "*.jupyter.srv.algotrade.dev"
+    - "*.c9.srv.algotrade.dev"
+    tls:
+      httpsRedirect: true
+  - port:
+      number: 443
+      name: https-443
+      protocol: HTTPS
+    hosts:
+    - "*.grafana.srv.algotrade.dev"
+    - "*.jupyter.srv.algotrade.dev"
+    - "*.c9.srv.algotrade.dev"
+    tls:
+      mode: SIMPLE
+      credentialName: user-gateway-cert-secret
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: user-gateway-cert
+  namespace: istio-system
+spec:
+  # Secret names are always required.
+  secretName: user-gateway-cert-secret
+  duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  subject:
+    organizations:
+    - testDevUserResource
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  usages:
+    - server auth
+    - client auth
+  #commonName: "*.algotrade.dev"
+  dnsNames:
+  - "*.grafana.srv.algotrade.dev"
+  - "*.jupyter.srv.algotrade.dev"
+  - "*.c9.srv.algotrade.dev"
+  issuerRef:
+    name: cluster-ca-issuer
+    kind: ClusterIssuer

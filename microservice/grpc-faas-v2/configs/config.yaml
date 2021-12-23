@@ -1,0 +1,6 @@
+Server:
+  GrpcPort: "50051"
+  ImageRepo: "108356037"
+
+Dev:
+  Mode: local
