@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      #PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
       IMAGE_REG: asia-east1-docker.pkg.dev/devops-playground-336005
       IMAGE_REPO: service-reg
 
