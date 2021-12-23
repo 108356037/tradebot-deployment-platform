@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set env
-      run: echo "asia-east1-docker.pkg.dev/devops-playground-336005/service-reg" >> $IMAGE_REPO
+      run: echo "IMAGE_REPO=asia-east1-docker.pkg.dev/devops-playground-336005/service-reg" >> $GITHUB_ENV
     - name: Build grpcfaas Docker image
       run: docker build -t ${IMAGE_REPO}/algotrade-grpc-faas-v2 -f ./microservice/grpc-faas-v2/Dockerfile ./microservice/grpc-faas-v2/
 
